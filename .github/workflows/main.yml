@@ -9,7 +9,7 @@ jobs:
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
-          # 最新の安定版SDKを取得
+          # 確実に存在する最新SDKに変更したじょ！
           curl -LO https://github.com/theos/sdks/raw/master/iPhoneOS16.5.sdk.tar.xz
           mkdir -p ~/theos/sdks
           tar -xf iPhoneOS16.5.sdk.tar.xz -C ~/theos/sdks
@@ -17,7 +17,6 @@ jobs:
       - name: Build
         run: |
           export THEOS=~/theos
-          # Makefileに合わせてビルド
           make package FINALPACKAGE=1
           
       - name: Upload
