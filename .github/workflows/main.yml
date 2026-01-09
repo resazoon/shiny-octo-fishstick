@@ -2,23 +2,21 @@ name: Build ESP
 on: [push]
 jobs:
   build:
-    runs-on: macos-13 # 安定したバージョンを指定
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Theos
         run: |
-          # Theos本体だけをインストール
           git clone --recursive https://github.com/theos/theos.git ~/theos
-          
-          # SDKを自前で用意せず、GitHub ActionsのXcodeに内蔵されてるやつを使う魔法
+          # SDKを落とさず、Macに最初から入ってるやつにリンクを貼る魔法だじょ
           mkdir -p ~/theos/sdks
           ln -s /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk ~/theos/sdks/iPhoneOS.sdk
 
       - name: Build
         run: |
           export THEOS=~/theos
-          # SDKのチェックを飛ばして内蔵を使う設定
+          # 本物のSDKの場所を直接教えてビルドするニダ！
           make package FINALPACKAGE=1 SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk
           
       - name: Upload
