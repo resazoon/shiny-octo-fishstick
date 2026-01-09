@@ -1,26 +1,34 @@
-name: Build ESP
-on: [push]
-jobs:
-  build:
-    runs-on: macos-latest  # 最新のMacサーバーを召喚するじょ
-    steps:
-      - uses: actions/checkout@v4
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-      - name: Setup Theos
-        run: |
-          git clone --recursive https://github.com/theos/theos.git ~/theos
-          # SDKを落とさず、Macに最初から入ってる最強のXcode SDKを使うニダ
-          mkdir -p ~/theos/sdks
-          ln -s /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk ~/theos/sdks/iPhoneOS.sdk
+@interface MyESPView : UIView
+@end
 
-      - name: Build
-        run: |
-          export THEOS=~/theos
-          # コンパイル実行！
-          make package FINALPACKAGE=1 SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk
-          
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: MyESP-Dylib
-          path: packages/*.deb
+@implementation MyESPView
+- (void)drawRect:(CGRect)rect {
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetRGBFillColor(context, 1.0, 0.0, 0.0, 1.0);
+    CGContextFillRect(context, CGRectMake(100, 100, 50, 50)); 
+}
+@end
+
+__attribute__((constructor))
+static void init() {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // エラーの原因だった keyWindow を回避する最新の書き方だじょ！
+        UIWindow *window = nil;
+        for (UIWindowScene* scene in [UIApplication sharedApplication].connectedScenes) {
+            if (scene.activationState == UISceneActivationStateForegroundActive) {
+                window = scene.windows.firstObject;
+                break;
+            }
+        }
+        
+        if (window) {
+            MyESPView *esp = [[MyESPView alloc] initWithFrame:window.bounds];
+            esp.backgroundColor = [UIColor clearColor];
+            esp.userInteractionEnabled = NO;
+            [window addSubview:esp];
+        }
+    });
+}
